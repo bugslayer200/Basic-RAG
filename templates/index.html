@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PDF Search</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f7f7f7;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        #query {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            margin-top: 12px;
+            padding: 12px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            background-color: #0078ff;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #005fcc;
+        }
+
+        .section {
+            margin-top: 25px;
+            padding: 15px;
+            background: #fafafa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            font-size: 14px;
+        }
+
+        .result-block {
+            padding: 10px;
+            margin-bottom: 10px;
+            background: #eef3ff;
+            border-left: 4px solid #0078ff;
+            border-radius: 6px;
+        }
+
+        .score {
+            color: #666;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <h2>Upload & Ingest PDF</h2>
+
+    <input type="file" id="pdf_file" accept="application/pdf" />
+    <button onclick="uploadPdf()">Upload & Ingest</button>
+
+    <div id="upload_result" class="section" style="display:none;"></div>
+    <hr>
+
+    <h1>PDF Semantic Search</h1>
+
+    <input id="query" type="text" placeholder="Ask something about your PDF..." />
+    <button onclick="search()">Search</button>
+
+    <div id="response" class="section" style="display:none;">
+        <h3>AI Response:</h3>
+        <pre id="ai_response"></pre>
+    </div>
+
+    <div id="results" class="section" style="display:none;">
+        <h3>Top Matches:</h3>
+        <div id="results_list"></div>
+    </div>
+
+    <div>
+    <button style="background:rgb(211, 91, 91);color:white" onclick="deleteCollection()">
+        Delete Entire Vector Database
+    </button>
+
+    <div id="delete_result" class="section" style="display:none;"></div>
+    </div>
+</div>
+
+<script>
+async function uploadPdf() {
+    const fileInput = document.getElementById("pdf_file");
+
+    if (fileInput.files.length === 0) {
+        alert("Please select a PDF file.");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", fileInput.files[0]);
+
+    const res = await fetch("/upload_pdf", {
+        method: "POST",
+        body: formData
+    });
+
+    const data = await res.json();
+
+    const div = document.getElementById("upload_result");
+    div.style.display = "block";
+
+    if (data.error) {
+        div.innerHTML = "<b style='color:red;'>Error: " + data.error + "</b>";
+    } else {
+        div.innerHTML = `
+            <b style='color:green;'>PDF successfully ingested!</b><br>
+            File: ${data.filename}<br>
+            Chunks added: ${data.chunks_added}
+        `;
+    }
+}
+
+async function search() {
+    const query = document.getElementById("query").value.trim();
+    if (!query) {
+        alert("Enter a question!");
+        return;
+    }
+
+    const payload = { query: query };
+
+    const res = await fetch("/search", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+        alert("Error: " + data.error);
+        return;
+    }
+
+    // Show response text
+    document.getElementById("response").style.display = "block";
+    document.getElementById("ai_response").textContent = data.answer;
+
+
+    // Show results
+    const results_container = document.getElementById("results_list");
+    results_container.innerHTML = "";
+    document.getElementById("results").style.display = "block";
+
+    data.results.forEach(r => {
+        const block = document.createElement("div");
+        block.className = "result-block";
+        block.innerHTML = `
+            <div>${r.text}</div>
+            <div class="score">Score: ${r.score.toFixed(4)}</div>
+        `;
+        results_container.appendChild(block);
+    });
+}
+
+async function deleteCollection() {
+    if (!confirm("Are you sure? This will permanently delete all vectors.")) {
+        return;
+    }
+
+    const res = await fetch("/delete_collection", {
+        method: "POST"
+    });
+
+    const data = await res.json();
+    const div = document.getElementById("delete_result");
+    div.style.display = "block";
+
+    if (data.status === "success") {
+        div.innerHTML = `<b style='color:green;'>${data.message}</b>`;
+    } else {
+        div.innerHTML = `<b style='color:red;'>Error: ${data.message}</b>`;
+    }
+}
+
+</script>
+
+</body>
+</html>

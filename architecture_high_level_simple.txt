@@ -1,0 +1,75 @@
+graph TB
+    subgraph "User Layer"
+        User["👤 Users"]
+    end
+    
+    subgraph "Presentation Layer"
+        UI["🌐 Web Interface<br/>Streamlit"]
+    end
+    
+    subgraph "Agent Layer"
+        QueryHandler["🔍 Query Processing<br/>Current"]
+        Agents["🤝 Multi-Agent System<br/>Future: Orchestration"]
+    end
+    
+    subgraph "Knowledge & Context Layer"
+        KnowledgeBase["📚 Knowledge Base<br/>• Document Processing<br/>• Text Extraction<br/>• Chunking"]
+        ContextMgr["🧠 Context Management<br/>• Embedding Generation<br/>• Vector Search<br/>• Context Retrieval"]
+    end
+    
+    subgraph "Core Foundation Layer"
+        DataStorage["💾 Data Storage<br/>• Vector DB (Qdrant)<br/>• Structured DB (Future)"]
+        AIServices["🤖 AI/ML Services<br/>• Embedding Models<br/>• LLM Service (Groq)<br/>• Prompt Management"]
+        Security["🔐 Security & Auth<br/>• SharePoint SSO<br/>• Token Management"]
+    end
+    
+    subgraph "Cloud Services"
+        Cloud["☁️ Cloud Infrastructure<br/>• Qdrant Cloud<br/>• Groq Cloud<br/>• SharePoint Online"]
+    end
+    
+    %% User Flow
+    User -->|"Interact"| UI
+    UI -->|"Queries"| QueryHandler
+    UI -->|"Upload"| KnowledgeBase
+    
+    %% Agent Layer Flow
+    QueryHandler -->|"Process"| ContextMgr
+    Agents -.->|"Future"| ContextMgr
+    Agents -.->|"Future"| DataStorage
+    
+    %% Knowledge Layer Flow
+    KnowledgeBase -->|"Processed Text"| ContextMgr
+    ContextMgr -->|"Vectors"| DataStorage
+    ContextMgr -->|"Query Vector"| DataStorage
+    DataStorage -->|"Similar Chunks"| ContextMgr
+    
+    %% Foundation Layer Flow
+    ContextMgr -->|"Context + Query"| AIServices
+    AIServices -->|"Answer"| QueryHandler
+    QueryHandler -->|"Response"| UI
+    
+    %% Cloud Connections
+    DataStorage -.->|"Cloud DB"| Cloud
+    AIServices -.->|"API Calls"| Cloud
+    Security -.->|"SSO"| Cloud
+    
+    %% Future Agent Flow
+    UI -.->|"Future"| Agents
+    Agents -.->|"Orchestrate"| QueryHandler
+    
+    %% Styling
+    classDef user fill:#e3f2fd,stroke:#1976d2,stroke-width:3px
+    classDef presentation fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef agent fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef knowledge fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
+    classDef foundation fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    classDef cloud fill:#e0f2f1,stroke:#00796b,stroke-width:3px
+    classDef future stroke-dasharray: 5 5
+    
+    class User user
+    class UI presentation
+    class QueryHandler,Agents agent
+    class KnowledgeBase,ContextMgr knowledge
+    class DataStorage,AIServices,Security foundation
+    class Cloud cloud
+    class Agents future

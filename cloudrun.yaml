@@ -1,0 +1,28 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: rag-app
+  namespace: burner-ronsingh2
+spec:
+  template:
+    spec:
+      containers:
+      - image: us-central1-docker.pkg.dev/burner-ronsingh2/rag-basic/rag-app
+        resources:
+            limits:
+              memory: 1Gi
+        ports:
+        - containerPort: 8501
+        env:
+        - name: QDRANT_URL
+          value: "https://b58d8196-1dbd-4944-a17f-a39abd1a40e3.us-east4-0.gcp.cloud.qdrant.io"
+        - name: QDRANT_API_KEY
+          value: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0.8wQrAu38k8Uk3tLALiH9_NPa4Lj6-s8gZpHcJust2bI"
+        - name: COLLECTION_NAME
+          value: "pdf_chunks"
+        - name: EMBEDDING_MODEL
+          value: "sentence-transformers/all-MiniLM-L6-v2"
+        - name: MAX_SEARCH_RESULTS
+          value: "5"
+        - name: GROQ_API_KEY
+          value: "PutAPIKeyHere"

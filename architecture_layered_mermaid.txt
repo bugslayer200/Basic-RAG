@@ -1,0 +1,114 @@
+graph TB
+    subgraph "User Layer"
+        User["👤 Users"]
+    end
+    
+    subgraph "Presentation Layer"
+        UI["🌐 Web Interface<br/>Streamlit<br/>• Chat Interface<br/>• Document Upload<br/>• Admin Panel"]
+    end
+    
+    subgraph "Agent Layer"
+        QueryHandler["🔍 Query Processing<br/>Current Implementation"]
+        PlannerAgent["🎯 Planner Agent<br/>Orchestrator<br/>Future"]
+        DisambiguationAgent["❓ Disambiguation Agent<br/>Intent Clarification<br/>Future"]
+        RAGAgent["📚 RAG Agent<br/>Retrieval Specialist<br/>Future"]
+        SQLAgent["💾 SQL Query Agent<br/>Structured Data<br/>Future"]
+        ResponseCompiler["✍️ Response Compiler<br/>Synthesis<br/>Future"]
+    end
+    
+    subgraph "Knowledge & Context Layer"
+        KnowledgeBase["📚 Knowledge Base<br/>• Document Parsing<br/>• Text Extraction<br/>• Chunking<br/>• Metadata Management"]
+        ContextMgr["🧠 Context Management<br/>• Embedding Generation<br/>• Vector Search<br/>• Context Retrieval<br/>• Relevance Scoring"]
+    end
+    
+    subgraph "Core Foundation Layer"
+        subgraph "Data Storage"
+            VectorDB[("💾 Vector Database<br/>Qdrant<br/>Embedding Storage")]
+            StructuredDB[("📋 Structured Database<br/>Future<br/>Metadata & Relations")]
+        end
+        subgraph "AI/ML Services"
+            EmbeddingModel["🤖 Embedding Models<br/>Sentence Transformers<br/>all-MiniLM-L6-v2"]
+            LLMService["⚡ LLM Service<br/>Groq API<br/>gpt-oss-20b"]
+            PromptMgr["📝 Prompt Management<br/>Langfuse<br/>Future"]
+        end
+        subgraph "Security & Authentication"
+            AuthService["🔐 Authentication<br/>SharePoint SSO/OAuth2<br/>Token Management"]
+        end
+    end
+    
+    subgraph "Cloud Services"
+        QdrantCloud["☁️ Qdrant Cloud<br/>Vector Database"]
+        GroqCloud["☁️ Groq Cloud<br/>LLM Inference"]
+        SharePointCloud["☁️ SharePoint Online<br/>Document Source"]
+    end
+    
+    %% User Flow
+    User -->|"Interact"| UI
+    UI -->|"Queries"| QueryHandler
+    UI -->|"Upload Documents"| KnowledgeBase
+    
+    %% Agent Layer - Current
+    QueryHandler -->|"Process Query"| ContextMgr
+    QueryHandler -->|"Get Context"| VectorDB
+    QueryHandler -->|"Generate Answer"| LLMService
+    
+    %% Agent Layer - Future
+    UI -.->|"Future"| PlannerAgent
+    PlannerAgent -.->|"Route"| DisambiguationAgent
+    PlannerAgent -.->|"Route"| RAGAgent
+    PlannerAgent -.->|"Route"| SQLAgent
+    DisambiguationAgent -.->|"Clarified"| RAGAgent
+    DisambiguationAgent -.->|"Clarified"| SQLAgent
+    DisambiguationAgent -.->|"Clarified"| ResponseCompiler
+    RAGAgent -.->|"Retrieve"| VectorDB
+    RAGAgent -.->|"Results"| ResponseCompiler
+    SQLAgent -.->|"Query"| StructuredDB
+    SQLAgent -.->|"Results"| ResponseCompiler
+    ResponseCompiler -.->|"Final Answer"| UI
+    
+    %% Knowledge Layer Flow
+    KnowledgeBase -->|"Processed Text"| ContextMgr
+    ContextMgr -->|"Generate Vectors"| EmbeddingModel
+    EmbeddingModel -->|"Store Vectors"| VectorDB
+    ContextMgr -->|"Search"| VectorDB
+    VectorDB -->|"Similar Chunks"| ContextMgr
+    
+    %% Foundation Layer Flow
+    ContextMgr -->|"Context + Query"| LLMService
+    LLMService -->|"Answer"| QueryHandler
+    QueryHandler -->|"Response"| UI
+    
+    %% Security Flow
+    KnowledgeBase -.->|"Authenticate"| AuthService
+    AuthService -.->|"SSO"| SharePointCloud
+    
+    %% Cloud Connections
+    VectorDB -.->|"Cloud Hosted"| QdrantCloud
+    LLMService -.->|"API Calls"| GroqCloud
+    KnowledgeBase -.->|"Download"| SharePointCloud
+    
+    %% Future Enhancements
+    KnowledgeBase -.->|"Future"| PromptMgr
+    PlannerAgent -.->|"Prompts"| PromptMgr
+    RAGAgent -.->|"Prompts"| PromptMgr
+    SQLAgent -.->|"Prompts"| PromptMgr
+    
+    %% Styling
+    classDef user fill:#e3f2fd,stroke:#1976d2,stroke-width:3px,color:#000
+    classDef presentation fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000
+    classDef agentCurrent fill:#4a90e2,stroke:#2c5aa0,stroke-width:2px,color:#fff
+    classDef agentFuture fill:#fff3e0,stroke:#f57c00,stroke-width:2px,stroke-dasharray: 5 5,color:#000
+    classDef knowledge fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#000
+    classDef foundation fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#000
+    classDef storage fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#000
+    classDef cloud fill:#e0f2f1,stroke:#00796b,stroke-width:3px,color:#000
+    
+    class User user
+    class UI presentation
+    class QueryHandler agentCurrent
+    class PlannerAgent,DisambiguationAgent,RAGAgent,SQLAgent,ResponseCompiler agentFuture
+    class KnowledgeBase,ContextMgr knowledge
+    class EmbeddingModel,LLMService,PromptMgr,AuthService foundation
+    class VectorDB,StructuredDB storage
+    class QdrantCloud,GroqCloud,SharePointCloud cloud
+
